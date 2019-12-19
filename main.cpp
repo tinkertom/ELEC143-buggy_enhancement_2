@@ -24,7 +24,7 @@ struct Motor {
 	// Motor direction pin.
 	DigitalOut dir;
 	// Motor hall effect sensor pins.
-	BusIn hall_pair;
+	BusIn hall_pair;	
 };
 
 struct Buggy {
@@ -63,23 +63,24 @@ int main()
 	buggy.motor_a.pwm.write(0.0f);
 	buggy.motor_b.pwm.write(0.0f);
 	
-	float duty = 0.5f;
+	float duty = 0.8f;
 	int hall_pair_state = 0;
 	int hall_timing[2][2];
 	Timer timer;
+	buggy.motor_b.pwm.write(duty);
+
 	
 	while (true) {
+		while (user_switch == 0);
 		led = 0;
 		while (user_switch == 1);
 		led = 1;
 		// Wait for finger to clear from buggy.
 		wait_us(5000);
 		
-		
-		
 		timer.reset();
 		timer.start();
-		while(!poll_motor(&buggy.motor_a.hall_pair, &hall_pair_state, &timer, hall_timing));
+		while(!poll_motor(&buggy.motor_b.hall_pair, &hall_pair_state, &timer, hall_timing));
 		duty = get_adjusted_duty(duty, hall_timing);
 		timer.stop();
 		terminal.printf("hall_timing[0][0] = %d\n\r", hall_timing[0][0]);
@@ -89,6 +90,8 @@ int main()
 		//terminal.printf("Average motor freq: %6.2fHz \t Wheel freq: %6.2f\n\r", fa, wa);
 		terminal.printf("Ajusted duty cycle: %6.2f\n\r", duty);
 		
+		buggy.motor_b.pwm.write(duty);
+
 		
 		//move_buggy(&buggy, FORWARD, 3.0f);
 		//rotate_buggy(&buggy, 360.0f);
@@ -125,7 +128,7 @@ bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Timer* timer, int h
 		return true;
 	}
 	
-	return true;
+	return false;
 }
 
 float get_adjusted_duty(float duty, int hall_timing[2][2])
@@ -139,8 +142,8 @@ float get_adjusted_duty(float duty, int hall_timing[2][2])
 	if (p2 < 0.0f)
 		p2 *= -1;
 	// Calculate frequency of motor rotation.
-	// frequency = 1 / average of both periods * pulses per motor revolution (then converted from milliseconds to seconds)
-	float mf = 1.0f / (p1 + p2) * 0.5f * 3.0E-6;
+	// frequency = 1 / average of both periods * pulses per motor revolution (then converted from microseconds to seconds)
+	float mf = 1.0f / ((p1 + p2) * 0.5f * (float)3.0E-6);
 	// Calculate required change in duty cycle.
 	// delta = 1 - wheel frequency, wheel frequency = motor frequency / motor to wheel ratio
 	float d = 1.0f - mf / 20.8f;
@@ -158,7 +161,7 @@ float get_adjusted_duty(float duty, int hall_timing[2][2])
 
 void control_motors(PwmOut* pwm_a, PwmOut* pwm_b, BusIn* hall_pair_a, BusIn* hall_pair_b, int pulses)
 {
-	float duty_a = 0.5f, duty_b = 0.5f;
+	float duty_a = 0.8f, duty_b = 0.8f;
 	int hall_pair_state_a = 0, hall_pair_state_b = 0;
 	int hall_timing_a[2][2], hall_timing_b[2][2];
 	int pulse_count_a = 0, pulse_count_b = 0;
