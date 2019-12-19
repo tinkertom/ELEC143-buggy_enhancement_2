@@ -1,4 +1,4 @@
-./build/main.o: main.cpp mbed_config.h mbed-os\mbed.h \
+./build/motor.o: motor.cpp mbed_config.h motor.h mbed-os\mbed.h \
   mbed-os\platform\mbed_version.h mbed-os\platform\mbed_toolchain.h \
   mbed-os\platform\mbed_preprocessor.h \
   C:\Keil_v5\ARM\ARMCLANG\Bin\..\include\rt_sys.h \
@@ -207,5 +207,4 @@
   mbed-os\platform\ScopedRomWriteLock.h mbed-os\platform\mbed_mpu_mgmt.h \
   mbed-os\hal\mpu_api.h mbed-os\platform\ScopedRamExecutionLock.h \
   mbed-os\platform\mbed_stats.h mbed-os\platform\Callback.h \
-  mbed-os\platform\FunctionPointer.h mbed-os\platform\ScopedLock.h \
-  buggy.h motor.h
+  mbed-os\platform\FunctionPointer.h mbed-os\platform\ScopedLock.h

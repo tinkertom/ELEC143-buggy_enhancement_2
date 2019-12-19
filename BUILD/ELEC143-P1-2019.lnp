@@ -1,5 +1,7 @@
 --cpu=Cortex-M4.fp
 ".\build\main.o"
+".\build\motor.o"
+".\build\buggy.o"
 ".\build\analogin.o"
 ".\build\analogin_api.o"
 ".\build\analogin_device.o"

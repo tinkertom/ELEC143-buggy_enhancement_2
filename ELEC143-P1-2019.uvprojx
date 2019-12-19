@@ -397,6 +397,26 @@
               <FileType>5</FileType>
               <FilePath>stats_report.h</FilePath>
             </File>
+            <File>
+              <FileName>motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>motor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\motor.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>buggy.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\buggy.h</FilePath>
+            </File>
+            <File>
+              <FileName>buggy.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>.\buggy.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
