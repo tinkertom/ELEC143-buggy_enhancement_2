@@ -10,10 +10,10 @@ void calibrate_motor_dir(Motor* motor)
 	int hall_pair_state = motor->hall_pair.read();
 	while (!calibrated) {
 		if (hall_pair_state == LOW_LOW && motor->hall_pair.read() == LOW_HIGH) {
-			motor->inverted = false;
+			motor->inverted = FORWARD;
 			calibrated = true;
 		} else if (hall_pair_state == LOW_LOW && motor->hall_pair.read() == HIGH_LOW) {
-			motor->inverted = true;
+			motor->inverted = REVERSE;
 			calibrated = true;
 		}
 		hall_pair_state = motor->hall_pair.read();
@@ -22,7 +22,7 @@ void calibrate_motor_dir(Motor* motor)
 	motor->pwm.write(0.0f);
 }
 
-bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Direction direction, bool inverted,  Timer* timer, int hall_timing[2][2])
+bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Direction direction, Direction inverted,  Timer* timer, int hall_timing[2][2])
 {
 	int curr_hall_pair_state = hall_pair->read();
 
@@ -95,15 +95,20 @@ float get_adjusted_duty(float duty, int hall_timing[2][2])
 
 void control_motors(Motor* motor_a, Motor* motor_b, int pulses)
 {
+	// Set initial duty cycle. Will be adjusted to achieve one wheel revolution per second.
 	float duty_a = 0.5f, duty_b = 0.5f;
 	int hall_pair_state_a = LOW_LOW, hall_pair_state_b = LOW_LOW;
 	int hall_timing_a[2][2], hall_timing_b[2][2];
 	int pulse_count_a = 0, pulse_count_b = 0;
+	// Timer object for hall effect sensor timings.
 	Timer timer;
+	timer.start();
 	
+	// Set motors to initial duty cycle.
 	motor_a->pwm.write(duty_a);
 	motor_b->pwm.write(duty_b);
-	timer.start();
+	
+	// Main while loop that handles pulse counting, and duty cycle adjustment.
 	while (pulse_count_a < pulses || pulse_count_b < pulses) {
 		if (pulse_count_a < pulses) {
 			if (poll_motor(&motor_a->hall_pair, &hall_pair_state_a, (Direction)motor_a->dir.read(), motor_a->inverted, &timer, hall_timing_a)) {
@@ -120,6 +125,7 @@ void control_motors(Motor* motor_a, Motor* motor_b, int pulses)
 			}
 		}
 	}
+	// Set motors to stop.
 	motor_a->pwm.write(0.0f);
 	motor_b->pwm.write(0.0f);
 	timer.stop();
