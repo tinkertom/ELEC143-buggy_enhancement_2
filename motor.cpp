@@ -2,34 +2,49 @@
 
 void calibrate_motor_dir(Motor* motor)
 {
+	// Set the period for the duty cycle that drives the motor.
 	motor->pwm.period_ms(10);
+	// Set the expected motor direction.
 	motor->dir.write(FORWARD);
+	// Start motor.
 	motor->pwm.write(1.0f);
 	
 	bool calibrated = false;
+	// Read current hall state.
 	int hall_pair_state = motor->hall_pair.read();
+	// Repeat while neither if condition has been met.
 	while (!calibrated) {
+		// If the second hall sensor is read high first then set the motor invertion to forward, aka false.
 		if (hall_pair_state == LOW_LOW && motor->hall_pair.read() == LOW_HIGH) {
 			motor->inverted = FORWARD;
+			// Mark calibration as completed.
 			calibrated = true;
-		} else if (hall_pair_state == LOW_LOW && motor->hall_pair.read() == HIGH_LOW) {
+		} 
+		// If the first hall sensor is read high first then set the motor invertion to reverse, aka true.
+		else if (hall_pair_state == LOW_LOW && motor->hall_pair.read() == HIGH_LOW) {
 			motor->inverted = REVERSE;
+			// Mark calibration as completed.
 			calibrated = true;
 		}
 		hall_pair_state = motor->hall_pair.read();
 	}
-	
+	// Stop motor.
 	motor->pwm.write(0.0f);
 }
 
-bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Direction direction, Direction inverted,  Timer* timer, int hall_timing[2][2])
+bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Direction direction, Direction inverted, Timer* timer, int hall_timing[2][2])
 {
 	int curr_hall_pair_state = hall_pair->read();
 
+	// Inverts the direction to read the motor in depending on the invertion of the motor.
 	if (inverted) {
 		direction = (Direction)!direction;
 	}
 	
+	// Check which direction the motor is traveling in, and choose according update block.
+	// Check to see if the current state is what should follow the previous state. 
+	// If so, take a timing and update previous state with current state.
+	// If the final state indicating a full pulse cycle has been detected, return true to indicate a pulse.
 	if (direction == FORWARD) {
 		if (*prev_hall_pair_state == LOW_LOW && curr_hall_pair_state == LOW_HIGH) {
 			*prev_hall_pair_state = curr_hall_pair_state;
@@ -97,7 +112,9 @@ void control_motors(Motor* motor_a, Motor* motor_b, int pulses)
 {
 	// Set initial duty cycle. Will be adjusted to achieve one wheel revolution per second.
 	float duty_a = 0.5f, duty_b = 0.5f;
+	// Initial values for hall pair states.
 	int hall_pair_state_a = LOW_LOW, hall_pair_state_b = LOW_LOW;
+	// Timings will be initialised the first time poll motor is called.
 	int hall_timing_a[2][2], hall_timing_b[2][2];
 	int pulse_count_a = 0, pulse_count_b = 0;
 	// Timer object for hall effect sensor timings.
@@ -110,6 +127,8 @@ void control_motors(Motor* motor_a, Motor* motor_b, int pulses)
 	
 	// Main while loop that handles pulse counting, and duty cycle adjustment.
 	while (pulse_count_a < pulses || pulse_count_b < pulses) {
+		// Execute if block while pulse count is bellow desired pulses for each motor.
+		// If pulse detected (timing values will also be updated), then update duty cycle and increment pulse count for each motor.
 		if (pulse_count_a < pulses) {
 			if (poll_motor(&motor_a->hall_pair, &hall_pair_state_a, (Direction)motor_a->dir.read(), motor_a->inverted, &timer, hall_timing_a)) {
 				duty_a = get_adjusted_duty(duty_a, hall_timing_a);
