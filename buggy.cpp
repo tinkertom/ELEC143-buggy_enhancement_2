@@ -14,7 +14,7 @@
 void move_buggy(Buggy* buggy, Direction dir, float meters)
 {
 	// The amount of pulses required to travel the specified distance.
-	int pulses = meters * PULSES_PER_METER;
+	unsigned int pulses = meters * PULSES_PER_METER;
 	
 	// Set the buggy's motors to travel in the specified direction.
 	buggy->motor_a.dir.write(dir);

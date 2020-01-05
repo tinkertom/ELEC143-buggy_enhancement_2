@@ -22,8 +22,8 @@ int main()
 	// Calibrate motors.
 	terminal.printf("press button to calibrate\n\r");
 	while (user_switch == 1);
-	calibrate_motor_dir(&buggy.motor_a);
-	calibrate_motor_dir(&buggy.motor_b);
+	calibrate_motor(&buggy.motor_a);
+	calibrate_motor(&buggy.motor_b);
 	terminal.printf("motor_a inversion = %d\n\r", buggy.motor_a.inverted);
 	terminal.printf("motor_b inversion = %d\n\r", buggy.motor_b.inverted);
 	// LED1 indicates that buggy has been calibrated.

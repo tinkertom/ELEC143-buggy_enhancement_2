@@ -1,6 +1,6 @@
 #include "motor.h"
 
-void calibrate_motor_dir(Motor* motor)
+void calibrate_motor(Motor* motor)
 {
 	// Set the period for the duty cycle that drives the motor.
 	motor->pwm.period_ms(10);
@@ -34,13 +34,14 @@ void calibrate_motor_dir(Motor* motor)
 
 bool poll_motor(BusIn* hall_pair, int* prev_hall_pair_state, Direction direction, Direction inverted, Timer* timer, int hall_timing[2][2])
 {
-	int curr_hall_pair_state = hall_pair->read();
-
 	// Inverts the direction to read the motor in depending on the invertion of the motor.
 	if (inverted) {
 		direction = (Direction)!direction;
 	}
-	
+
+    // Read current state of hall effect sensor pair.
+    int curr_hall_pair_state = hall_pair->read();
+
 	// Check which direction the motor is traveling in, and choose according update block.
 	// Check to see if the current state is what should follow the previous state. 
 	// If so, take a timing and update previous state with current state.
@@ -85,18 +86,15 @@ float get_adjusted_duty(float duty, int hall_timing[2][2])
 	// Calculate period of one pulse.
 	float p1 = 2.0f * (hall_timing[0][1] - hall_timing[0][0]);
 	float p2 = 2.0f * (hall_timing[1][1] - hall_timing[1][0]);
-	// Take absolute value of period result to accomodate motor moving in opposite direction.
-	/*if (p1 < 0.0f)
-		p1 *= -1;
-	if (p2 < 0.0f)
-		p2 *= -1;*/
+	
 	// Calculate frequency of motor rotation.
 	// frequency = 1 / average of both periods * pulses per motor revolution (then converted from microseconds to seconds)
 	float mf = 1.0f / ((p1 + p2) * 0.5f * (float)3.0E-6);
 	// Calculate required change in duty cycle.
-	// delta = 1 - wheel frequency, wheel frequency = motor frequency / motor to wheel ratio
+	// delta = 1(desired wheel revolutions per second) - wheel frequency, wheel frequency = motor frequency / motor to wheel ratio
 	float d = 1.0f - mf / 20.8f;
 	
+    // Get adjusted duty
 	duty = duty + d * 0.1f;
 	
 	// Make sure the outputed value are within the range of what should be writen to the pwm pins.
