@@ -29,12 +29,6 @@ int main()
 	// LED1 indicates that buggy has been calibrated.
 	led = 1;
 	while (user_switch == 0);
-	wait_us(500000);
-	
-	// Make sure buggy is stationary by setting both motor to stop.
-	buggy.motor_a.pwm.write(0.0f);
-	buggy.motor_b.pwm.write(0.0f);
-	
 	
 	while (true) {
 		while (user_switch == 1);
